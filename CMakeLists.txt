@@ -40,8 +40,16 @@ add_compile_definitions(_USE_MATH_DEFINES)
 # find_package(JUCE CONFIG REQUIRED)        # If you've installed JUCE to your system
 # or
 # Configure this path to point to your JUCE installation:
-set(JUCE_PATH "X:/.../JUCE" CACHE PATH "Path to JUCE framework")
+set(JUCE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/JUCE" CACHE PATH "Path to JUCE framework")
 add_subdirectory(${JUCE_PATH} juce_build)   # If you've put JUCE in a subdirectory called JUCE
+
+# CLAP builds via the community JUCE bridge (pinned).
+include(FetchContent)
+FetchContent_Declare(clap-juce-extensions
+    GIT_REPOSITORY https://github.com/free-audio/clap-juce-extensions.git
+    GIT_TAG        c1a5ad025f95d01e03267857fa8276ebeed16500
+    GIT_SHALLOW    FALSE)
+FetchContent_MakeAvailable(clap-juce-extensions)
 
 add_subdirectory(audio_engine)
 
@@ -74,8 +82,13 @@ juce_add_plugin(CloudReverb
     FORMATS AU VST3 LV2 Standalone                  # The formats to build. Other valid formats are: AAX Unity VST AU AUv3
     VST2_CATEGORY kPlugCategEffect
     VST3_CATEGORIES Fx Reverb
+    LV2URI "https://github.com/meros-co/CloudReverb"
     AU_MAIN_TYPE kAudioUnitType_Effect
     PRODUCT_NAME "CloudReverb")        # The name of the final executable, which can differ from the target name
+
+clap_juce_extensions_plugin(TARGET CloudReverb
+    CLAP_ID "com.bensonc.cloudreverb"
+    CLAP_FEATURES audio-effect reverb)
 
 # `juce_generate_juce_header` will create a JuceHeader.h for a given target, which will be generated
 # into your build tree. This should be included with `#include <JuceHeader.h>`. The include path for
